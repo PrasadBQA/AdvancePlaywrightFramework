@@ -1,0 +1,18 @@
+
+# Local assistant preferences
+.commandcode/
+
+# Environment secrets
+.env
+
+# Generated reports and run data
+tta-report/
+reports/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

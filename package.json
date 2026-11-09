@@ -1,0 +1,26 @@
+{
+  "name": "advanceplaywrightframework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:login": "playwright test src/tests/Login_By_POM.spec.ts --project=chromium"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "allure-playwright": "^3.14.0",
+    "csv-parse": "^7.0.3",
+    "dotenv": "^18.0.9",
+    "jsonpath-plus": "^11.3.0",
+    "typescript": "^7.0.2",
+    "winston": "^3.19.0",
+    "xlsx": "^0.18.5"
+  }
+}
