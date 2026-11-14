@@ -1,45 +1,50 @@
 // This File Contains only Page Locators and Page Actions(functions) for Login Page.
 
 
-import { Page, Locator, test} from '@playwright/test';
-
-export class LoginPage {
-    // Page Locators for Login Page:
-    readonly page: Page;
-    readonly emailInput: Locator;
-    readonly passwordInput: Locator;
-    readonly loginButton: Locator;
+import { Page, Locator, test, expect} from '@playwright/test';
+import { BasePage } from './BasePage';
 
     // Constructor to initialize the locators and page object
-    constructor(page: Page)
-    {
-        // Why do we initilize the page locators inside the constructor?
-        // Because we need to pass the page object to the constructor and then use that page object to initialize the locators.
-        // This is because the locators are dependent on the page object and we need to have access to the page object in order to initialize the locators.
+    export class LoginPage extends BasePage {
 
-        // or
+    static readonly PATH = '/playwright/ttacart/index.html';
 
-        // Whenever we say readonly says that this variable is only going to be initialized only once and then it will be read-only. So we can initialize the locators in the constructor and then use them in the page actions.
-        // if something is readonly onetime you can assign/initialize it and that assignment/initialization happens in constructor.
-        // After that, you cannot change it. So we can initialize the locators in the constructor and then use them in the page actions.
-        this.page = page;
-        this.emailInput = page.getByRole('textbox', { name: 'Username' });
-        this.passwordInput = page.getByRole('textbox', { name: 'Password' });
-        // TTACart uses data-test, not Playwright's default data-testid.
+    private readonly usernameInput: Locator;
+    private readonly passwordInput: Locator;
+    private readonly loginButton: Locator;
+    private readonly errorBox: Locator;
+    private readonly loginCredentialsHint: Locator;
+
+    constructor(page: Page) {
+        super(page, 'LoginPage');
+        this.usernameInput = page.locator('[data-test="username"]');
+        this.passwordInput = page.locator('[data-test="password"]');
         this.loginButton = page.locator('[data-test="login-button"]');
+        this.errorBox = page.locator('[data-test="error"]');
+        this.loginCredentialsHint = page.locator('[data-test="login-credentials"]');
     }
 
-    // Page Actions for Login Page:
-    async goto()
-    {
-        await this.page.goto("https://app.thetestingacademy.com/playwright/ttacart/");
+    async open(): Promise<void> {
+        this.log.info("Open login page");
+        await this.goto(LoginPage.PATH);
     }
 
-    async login(username: string, password: string)
-    {
-        await this.emailInput.fill(username);
-        await this.passwordInput.fill(password);
-        await this.loginButton.click();
+    async loginAs(username: string, password: string): Promise<void> {
+        this.log.info(`loginAs ${username}`);
+        await this.el.fill(this.usernameInput, username);
+        await this.el.fill(this.passwordInput, password);
+        await this.el.click(this.loginButton);
+        await expect.poll(async () => (
+            this.page.url().includes('/inventory') || await this.errorBox.isVisible()
+        )).toBe(true);
     }
 
+    async waitForLoginButtonHidden(): Promise<void> {
+        await this.el.waitForHidden(this.loginButton);
+    }
+
+    async expectErrorContains(text: string): Promise<void> {
+        await expect(this.errorBox).toBeVisible();
+        await expect(this.errorBox).toContainText(text);
+    }
 }

@@ -1,8 +1,14 @@
 {
   "compilerOptions": {
     "types": ["node"],
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@config/*": ["./src/config/*"]
+    }
   },
   "include": ["playwright.config.ts", "src/**/*.ts"]
 }

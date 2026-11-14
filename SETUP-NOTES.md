@@ -253,17 +253,43 @@ Pages to create:
 
 ## Notes & Clarifications
 
-### Why there is no `tsconfig.json`
+### TypeScript path aliases and relative imports
 
-- `npm init playwright@latest` does **not** generate a `tsconfig.json` — it only creates `playwright.config.ts`, `tests/`, `package.json`, `.gitignore` and the GitHub workflow.
-- Playwright transpiles TypeScript internally, so tests run without a tsconfig.
-- `package.json` also has no `typescript` devDependency (the "Normal Way" step 2 would have added it), so there is no `tsc` to consume a tsconfig.
-- A tsconfig is only needed for editor/type-checking support, strict settings, and path aliases (e.g. `@pages/*`). Adding one requires `npm i -D typescript` as well.
+The project configures aliases in `tsconfig.json` under `compilerOptions.paths`:
+
+```json
+"module": "NodeNext",
+"moduleResolution": "NodeNext",
+"paths": {
+  "@/*": ["./src/*"],
+  "@utils/*": ["./src/utils/*"]
+}
+```
+
+- `@/*` maps imports starting with `@/` to the `src/` directory. For example, `@/utils/UtilElementLocator` points to `src/utils/UtilElementLocator.ts`.
+- `@utils/*` is a narrower alias for utilities. For example, `@utils/UtilElementLocator` resolves to the same file.
+- Relative imports such as `../utils/UtilElementLocator` continue to work. Aliases are optional shortcuts; adding them does not disable relative paths, so both styles can coexist.
+- `paths` helps TypeScript and editor tooling resolve import names; it does not rewrite import strings in emitted JavaScript. If an alias works in the editor but fails when tests run, the test/runtime tool must also support the configured aliases or be configured separately.
+- After changing `tsconfig.json`, restart the editor's TypeScript server if diagnostics do not refresh.
+
+`npm init playwright@latest` does not generate a `tsconfig.json` in every setup. Adding aliases later is a one-time project configuration, not a per-file or per-import setup step.
 
 ### Actual repo state vs documented steps
 
 - `playwright.config.ts` is still the **default scaffold**: `testDir: './tests'` (folder no longer exists), 3 browsers (chromium/firefox/webkit), dotenv import commented out. The STEP 5/6 custom version has not been applied yet.
-- `package.json` shows `@playwright/test`, `@types/node` and the STEP 2 libraries — but no `typescript`.
+- `package.json` includes `typescript` as a dev dependency, so `tsc` can use the project's `tsconfig.json`.
+
+### Flexible locator type and logger scope
+
+A locator utility can accept both selector strings and Playwright `Locator` objects. This lets callers use CSS/XPath selectors or Playwright locator methods such as `page.getByTestId()` and `page.getByRole()`.
+
+```ts
+export type Flex = string | Locator;
+```
+
+`Flex` is a TypeScript union type: a value of this type can be either a string or a `Locator`. For example, a string might be `'[data-qa="x"]'`, while a Playwright locator might be `page.getByTestId('username')`. A utility can use this type to support either locator style.
+
+`UtilElementLocator` accepts a `scope` string in its constructor, defaulting to `'UtilElementLocator'`. It passes that value to `createLogger(scope)`, which returns a Winston child logger tagged with the scope. Logs from the utility therefore identify their source. Callers can provide a different scope, such as `'LoginPage'` or `'InventoryPage'`, so their log entries carry that label instead.
 
 ---
 
