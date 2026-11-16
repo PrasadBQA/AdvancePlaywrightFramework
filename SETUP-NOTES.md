@@ -36,6 +36,7 @@
 - Two setup paths exist: the **Normal Way** (manual init) and the **Direct Playwright Setup** (single command).
 - `playwright.config.ts` is "the brain of the framework".
 - The framework targets multiple environments (QA / STG / PROD / DEV / API) via `.env` switching.
+- `visualStep` is a custom utility built by modifying/extending Playwright's `test.step()`. It groups actions into named steps for clearer reports and readability, and takes a screenshot when each step body ends. It does not create a separate test for every action.
 
 ---
 
@@ -233,6 +234,67 @@ Pages to create:
 4. `CheckOne` (checkout step one)
 5. `CheckTwo` (checkout step two)
 6. `OrderConfirmation`
+
+---
+
+# Playwright Fixtures
+
+## What fixtures are
+
+Fixtures are Playwright's reusable setup-and-teardown mechanism. A test requests the fixtures it needs by naming them in its callback parameters; Playwright creates them before the test and disposes of them afterward according to their scope. This avoids repeating setup code in every test. Hooks such as `beforeEach` and `afterEach` are still useful, but fixtures package setup, the resource it creates, and cleanup into a reusable dependency.
+
+## Built-in fixtures
+
+| Fixture | What it provides | Scope |
+|---|---|---|
+| `page` | A page in a fresh browser context | Test |
+| `context` | Browser context, including cookies and storage | Test |
+| `browser` | Browser instance shared by tests in a worker | Worker |
+| `browserName` | Current browser name, such as `chromium` | Worker |
+| `request` | API request context | Test |
+
+Example using built-in fixtures:
+
+```ts
+import { test } from '@playwright/test';
+
+test('inspect browser and make an API request', async ({ page, context, browser, browserName, request }) => {
+  console.log('Browser:', browserName);
+  console.log('Browser connected:', browser.isConnected());
+  console.log('Page URL:', page.url());
+
+  const response = await request.get('https://jsonplaceholder.typicode.com/posts/1');
+  console.log('API status:', response.status());
+
+  const cookies = await context.cookies();
+  console.log('Cookies:', cookies.length);
+});
+```
+
+A test can request only the fixtures it uses. For example, a page-object test can ask for `{ page }`, then construct `LoginPage`, `InventoryPage`, or other page objects using that page.
+
+## Custom fixtures
+
+Custom fixtures extend Playwright's `test` object with project-specific resources such as page objects or a page that has already completed a common login flow. They are usually defined in a shared file such as `src/fixtures/test-base.ts`, then imported from that file by tests that need them.
+
+```ts
+import { test } from '../fixtures/test-base';
+
+test('add an item to the cart', async ({ loginPage }) => {
+  // loginPage is prepared by the custom fixture
+  await loginPage.addToCart();
+});
+```
+
+The fixture setup can create the page object, navigate to the login page, authenticate, and prepare the next page object. The test then focuses on its own assertions and actions instead of repeating this arrangement. Fixture names and exposed page-object methods must match the actual project implementation.
+
+A logged-in fixture does not normally mean tests share one logged-in browser session. With the default test-scoped `page` and `context`, Playwright gives each test an isolated context; the fixture performs the login setup for each test that requests it. This improves reuse and readability, but login setup itself still runs for each test unless a different state-sharing design is deliberately configured.
+
+## Fixtures for multi-step checkout
+
+A fixture for the final order-confirmation page can be useful even though it is the last page in the user journey. Its purpose is to provide a ready-to-use test starting point, not necessarily to represent a page that precedes another page. To prepare it, the fixture can perform the prerequisite steps: login, inventory, cart, checkout details, and order submission. The test receives the final page object (or another deliberately exposed workflow object) with that flow completed and can verify the confirmation state.
+
+Keep fixture setup focused on genuinely common setup. If a test needs to verify the intermediate checkout steps themselves, inject an earlier page object or compose a fixture that stops at the relevant step rather than hiding the behavior the test is meant to validate.
 
 ---
 
