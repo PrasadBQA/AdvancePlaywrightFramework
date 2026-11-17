@@ -1,0 +1,2 @@
+2026-11-17 11:05:45 [info] Payload is set: {"firstname":"Jimm","lastname":"Brownn","totalprice":111,"depositepaid":true,"bookingdates":{"checkin":"2018-01-01","checkout":"2019-01-01"},"additionalneeds":"Breakfast"}
+2026-11-17 11:05:45 [info] Header is set: {"Accept":"application/json","Content-Type":"application/json"}

@@ -1,0 +1,113 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: apiTests\01_restful_booker_raw\04_put_operation.spec.ts >> Restful Booker booking API >> TC#2 @p0 - PUT : Verify that update the existing booking is working fine.
+- Location: src\tests\apiTests\01_restful_booker_raw\04_put_operation.spec.ts:13:5
+
+# Error details
+
+```
+Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 405
+```
+
+# Test source
+
+```ts
+  1  | import { test, expect, request } from '@playwright/test';
+  2  | import { logger } from '@utils/logger';
+  3  | 
+  4  | test.describe('Restful Booker booking API', () => {
+  5  |     
+  6  |     // If you want to make PUT request,
+  7  |     // You need to make sure that you create a token - Post Auth -> will five you token
+  8  |     // For that Post request first
+  9  |     // Then you have to Create a Booking -> Post Booking - it will give you a booking ID
+  10 |     // By using this token and booking Id only we can make a PUT Request
+  11 |     // You can not make a PUT Request directly, If you try it'll give you a forbidden
+  12 | 
+  13 |     test('TC#2 @p0 - PUT : Verify that update the existing booking is working fine.', async({ request }) => {
+  14 | 
+  15 |         const headers = {
+  16 |             'Accept': 'application/json',
+  17 |             'Content-Type': 'application/json',
+  18 |         };
+  19 | 
+  20 |         const payload = {
+  21 |             firstname: 'Pramod',
+  22 |             lastname: 'Dutta',
+  23 |             totalprice: 111,
+  24 |             depositpaid: true,
+  25 |             bookingdates: {
+  26 |                 checkin: '2018-01-01',
+  27 |                 checkout: '2019-01-01',
+  28 |             },
+  29 |             additionalneeds: 'Breakfast',
+  30 |         };
+  31 | 
+  32 |         let token ='';
+  33 |         let bookingId = 0;
+  34 | 
+  35 |         await test.step('Step 1 - Create Auth token', async() => {
+  36 | 
+  37 |             const responseData = await request.post('/auth',{
+  38 |                 headers,
+  39 |                 data: {
+  40 |                     username: 'admin',
+  41 |                     password: 'password123',
+  42 |                 },
+  43 |                 // we have hard-coded our Username and Password, 
+  44 |                 // we'll replace it with process.env.username - later/future
+  45 |             });
+  46 | 
+> 47 |             expect(await responseData.status()).toBe(200);
+     |                                                 ^ Error: expect(received).toBe(expected) // Object.is equality
+  48 | 
+  49 |             const data = await responseData.json();
+  50 |             token = data.token;
+  51 |             expect(token).toBeTruthy();
+  52 |             logger.info('Created auth token for PUT booking flow ');
+  53 | 
+  54 |         });
+  55 | 
+  56 |         await test.step('Step 2 - Create Booking to Update', async() => {
+  57 | 
+  58 |             const responseData = await request.post('/booking', {
+  59 |                 
+  60 |                 headers,
+  61 |                 data: payload,
+  62 |             });
+  63 | 
+  64 |             expect(responseData.status()).toBe(200)
+  65 |             const data = responseData.json();
+  66 |             expect(bookingId).toBeTruthy();
+  67 |             logger.info(`Created booking id for update: ${bookingId}`);
+  68 |         });
+  69 | 
+  70 |         await test.step('Step 3 - Update Booking', async() => {
+  71 | 
+  72 | 
+  73 |             const responseData = await request.put(`/booking/${bookingId}`, {
+  74 |                 headers: {
+  75 |                     ...headers,
+  76 |                     Cookie:`token=${token}`
+  77 |                 },
+  78 |                 data: payload,
+  79 |             });
+  80 |             const data = await responseData.json();
+  81 |             expect(data.firstname).toBe(payload.firstname);
+  82 |             expect(data.lastname).toBe(payload.lastname);
+  83 |             logger.info(`Updated booking id ${bookingId}: ${data.firstname} ${data.lastname}`);
+  84 |         
+  85 |         });
+  86 | 
+  87 |     });
+  88 | });
+```

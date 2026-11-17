@@ -17,3 +17,12 @@
 2026-11-16 19:37:56 [info] [LoginPage] Open login page
 2026-11-16 19:37:58 [info] [LoginPage] loginAs standard_user
 2026-11-16 19:37:58 [info] [LoginPage] loginAs locked_out_user
+2026-11-17 07:56:10 [info] Payload is set: {"firstname":"Jim","lastname":"Brown","totalprice":111,"depositepaid":true,"bookingdates":{"checkin":"2018-01-01","checkout":"2019-01-01"},"additionalneeds":"Breakfast"}
+2026-11-17 07:56:10 [info] Header is set: {"Accept":"application/json","Content-Type":"application/json"}
+2026-11-17 07:57:18 [info] Payload is set: {"firstname":"Jim","lastname":"Brown","totalprice":111,"depositepaid":true,"bookingdates":{"checkin":"2018-01-01","checkout":"2019-01-01"},"additionalneeds":"Breakfast"}
+2026-11-17 07:57:18 [info] Header is set: {"Accept":"application/json","Content-Type":"application/json"}
+2026-11-17 11:05:45 [info] Payload is set: {"firstname":"Jimm","lastname":"Brownn","totalprice":111,"depositepaid":true,"bookingdates":{"checkin":"2018-01-01","checkout":"2019-01-01"},"additionalneeds":"Breakfast"}
+2026-11-17 11:05:45 [info] Header is set: {"Accept":"application/json","Content-Type":"application/json"}
+2026-11-17 21:33:55 [info] Created auth token for PUT booking flow 
+2026-11-17 21:33:55 [info] Created booking id for update: 2054
+2026-11-17 21:33:56 [info] Updated booking id 2054: Pramod Dutta

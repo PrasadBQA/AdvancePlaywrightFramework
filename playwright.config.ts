@@ -9,11 +9,10 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 function resolveBaseURL(): string {
-  if (process.env.BASE_URL) return process.env.BASE_URL;
   const env = (process.env.TTA_ENV || 'qa').toLowerCase();
+  if (env === 'api') return process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
+  if (process.env.BASE_URL) return process.env.BASE_URL;
   switch (env) {
-    case 'api':
-      return process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com';
     case 'dev':
     case 'local':
       return process.env.DEV_BASE_URL || 'http://localhost:3000';
@@ -47,14 +46,16 @@ export default defineConfig({
   reporter: [
     ['line'],
     ['html', { open: 'never' }],
-    ['./src/utils/CustomReporter.ts']],
+    ['./src/utils/CustomReporter.ts'],
+    ['allure-playwright'],
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     //headless: false,
     //viewport: { width: 1920, height: 1080 },
     /* Base URL to use in actions like `await page.goto('')`. */
     // baseURL: 'http://localhost:3000',
-    baseURL: process.env.BASE_URL,
+    baseURL: resolveBaseURL(),
 
     screenshot: 'on',
     video: 'on',

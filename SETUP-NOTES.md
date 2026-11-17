@@ -355,6 +355,138 @@ export type Flex = string | Locator;
 
 ---
 
+# API Testing with Playwright
+
+```ts
+import {test, expect} from '@playwright/test';
+import { request } from 'node:http';
+
+// Ping Request.
+// Ping request help you to test if the server is up.
+// Basically communication btw Client - Server to check if all well.
+
+// HTTP Get -> https://restful-booker.herokuapp.com/ping
+
+// Notes: https://app.thetestingacademy.com/playwright/learn/playwright-api/
+
+test('Ping request - GET', async({ request }) => {
+
+    const responseData = request.get('/ping');
+    // in this repo baseURL will be fetched from "playwright.config.json" file
+    // under function resolveBaseUrl() -> switch(env) -> case 'API': return process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com'
+
+    // Before running any kindof api test case, run the below command
+    // export TTA_ENV=api npx playwright test e2e.spec.ts
+
+    // you can to export the api, you have to tell him that you are running a API Test Case,
+    // The command will change
+
+    // In this way the Advantage is: You do not have to type the baseURL.
+    // Base URL Will automatically come from the playwright.config.json configuration
+    // So you just have to add end point 
+
+
+});
+```
+
+```ts
+import{test,expect} from '@playwright/test';
+import {request} from 'node:http';
+import { Logger } from '@/utils/logger';
+
+test('TC#01 @p0 - POST : Verify  that create bookinng is working fine', async({request}) => {
+
+    // To Make a POST Request we have certain things to understand
+
+    // What is the URL that we are using => https://restful-booker.herokuapp.com/booking
+    // What is the HTTP Method that we are using: POST
+    // Request PAYLOAD/ request body -> simple json file or js object
+    // Headers need to set -> content-type json
+    // Authentication? for POST we don't have authentication here
+    // 
+
+});
+```
+
+## API Notes
+
+### New Context — `03_newContext_api.spec.ts`
+
+Use a separate API request context when a test needs to target a different API, such as GoREST, without changing the shared Playwright configuration or the existing Restful Booker tests. The new context has its own `baseURL`, headers, and timeout settings.
+
+```ts
+import { expect, request, test } from '@playwright/test';
+
+test('use an isolated context for GoREST', async () => {
+  const ctx = await request.newContext({
+    baseURL: 'https://gorest.in',
+    extraHTTPHeaders: { 'X-Trace-Id': 'demo-123' },
+    timeout: 15_000,
+  });
+
+  const response = await ctx.get('/public/v2/users');
+  expect(response.ok()).toBeTruthy();
+
+  await ctx.dispose();
+});
+```
+
+The context can target `https://gorest.in/public/v2/users` while the rest of the suite continues using its configured API. Dispose of the context when the test is done to release its resources.
+
+### PUT — Update an existing booking
+
+A PUT request to update a Restful Booker booking requires both an auth token and a booking ID. Create the token with the Auth POST endpoint and create the booking with the Booking POST endpoint first; attempting the PUT without authentication is forbidden.
+
+```ts
+test.describe('Restful Booker booking API', () => {
+    
+    // If you want to make PUT request,
+    // You need to make sure that you create a token - Post Auth -> will five you token
+    // For that Post request first
+    // Then you have to Create a Booking -> Post Booking - it will give you a booking ID
+    // By using this token and booking Id only we can make a PUT Request
+    // You can not make a PUT Request directly, If you try it'll give you a forbidden
+
+    test('TC#2 @p0 - PUT : Verify that update the existing booking is working fine.', async({ request }) => {
+
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        };
+
+        const payload = {
+            firstname: 'Pramod',
+            lastname: 'Dutta',
+            totalprice: 111,
+            depositpaid: true,
+            bookingdates: {
+                checkin: '2018-01-01',
+                checkout: '2019-01-01',
+            },
+            additionalneeds: 'Breakfast',
+        };
+
+        let token ='';
+        let bookingId = 0;
+
+        await test.step('Step 1 - Create Auth token', async() => {
+
+        });
+
+        await test.step('Step 2 - Create Booking to Update', async() => {
+
+        });
+
+        await test.step('Step 3 - Update Booking', async() => {
+
+        });
+        
+    });
+});
+```
+
+---
+
 ## Open Items / Follow-ups
 
 - Create `tsconfig.json` (and install `typescript`) if type-checking/aliases are wanted.
