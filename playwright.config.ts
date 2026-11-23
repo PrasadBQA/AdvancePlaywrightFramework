@@ -69,11 +69,19 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: '**/apiTests/**/*.spec.ts',
       /* Full HD. Set after the device spread, because devices['Desktop Chrome']
          carries its own 1280x720 viewport and project-level `use` wins. */
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 } },
+    },
+    {
+      name: 'api',
+      testMatch: '**/apiTests/**/*.spec.ts',
+      use: {
+        baseURL: process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com',
+      },
     },
 
     // {

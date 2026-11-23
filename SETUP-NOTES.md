@@ -410,6 +410,24 @@ test('TC#01 @p0 - POST : Verify  that create bookinng is working fine', async({r
 
 ## API Notes
 
+### API Helper — `src/utils/ApiHelper.ts`
+
+`ApiHelper` is a reusable Playwright HTTP client for test cases. It accepts either a `Page` or `APIRequestContext`, defines request options such as headers, body data, query parameters, and timeout, and supports GET, POST, PUT, PATCH, and DELETE. Its helper methods centralize request setup and response handling so API tests avoid repeating boilerplate.
+
+#### `ApiContext`
+
+```ts
+export type ApiContext = Page | APIRequestContext;
+```
+
+`ApiContext` can hold both a Playwright `Page` and an `APIRequestContext`.
+
+- Use `Page` when the API helper is used from a UI test case.
+- Use `APIRequestContext` when the API helper is used from an API test case.
+- The `|` is a TypeScript union (an "OR" condition). It means `ApiContext` may be either of these two types, not both at the same time.
+
+This makes the API helper flexible: the caller can provide whichever context is appropriate for the test.
+
 ### New Context — `03_newContext_api.spec.ts`
 
 Use a separate API request context when a test needs to target a different API, such as GoREST, without changing the shared Playwright configuration or the existing Restful Booker tests. The new context has its own `baseURL`, headers, and timeout settings.
